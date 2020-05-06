@@ -1,9 +1,7 @@
-from multiprocessing import Process, Array, freeze_support
-from win32gui import FindWindow, ShowWindow, SetForegroundWindow
-from win32con import SW_MINIMIZE, SW_RESTORE
-from pygame.time import Clock
+from multiprocessing import Process, Array
+import pygame
 
-clock = Clock()
+clock = pygame.time.Clock()
 
 
 def OpenProcess(target, args, source=None, bg=None):

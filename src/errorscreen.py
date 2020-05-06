@@ -1,6 +1,6 @@
 import pygame
 from tools.window import Window
-from tools import text
+from tools.uielements import txtSurf, drawtxt
 
 
 class ErrorScreen(Window):
@@ -16,33 +16,33 @@ class ErrorScreen(Window):
         self.titleFont = pygame.font.Font('fonts/OpenSans-SemiBold.ttf', 50)
         self.subFont = pygame.font.Font('fonts/OpenSans-Regular.ttf', 30)
 
-        self.title = text.txtSurf('Error', self.titleFont, [0]*3)
+        self.title = txtSurf('Error', self.titleFont, [0]*3)
 
         self.divider = ((self.w * 0.05, self.h * 0.2), (self.w * 0.95, self.h * 0.2))
 
-        self.topText = text.txtSurf('An error occurred doing execution of the program.', self.subFont, [0]*3)
-        self.subText = text.txtSurf('The following problems were found:', self.subFont, [0]*3)
+        self.topText = txtSurf('An error occurred doing execution of the program.', self.subFont, [0]*3)
+        self.subText = txtSurf('The following problems were found:', self.subFont, [0]*3)
 
         self.descreps = []
         for des in descrep:
-            self.descreps.append(text.txtSurf(des, self.subFont, [0]*3))
+            self.descreps.append(txtSurf(des, self.subFont, [0]*3))
 
         self.run()
 
     def draw(self):
         self.win.fill((240, 240, 240))
 
-        text.pydrawtxt('Error', self.titleFont, (0, 0, 0), (self.w * 0.5, self.h * 0.075), 'c', self.win)
+        drawtxt('Error', self.titleFont, (0, 0, 0), (self.w * 0.5, self.h * 0.075), 'c', self.win)
 
         pygame.draw.line(self.win, (50, 50, 50), *self.divider)
 
-        text.pydrawtxt('An error occurred doing execution of the program', self.subFont, (0, 0, 0), (self.w * 0.5, self.h * 0.3), 'c', self.win)
-        text.pydrawtxt('The following problems were found:', self.subFont, (0, 0, 0), (self.w * 0.5, self.h * 0.4), 'c', self.win)
+        drawtxt('An error occurred doing execution of the program', self.subFont, (0, 0, 0), (self.w * 0.5, self.h * 0.3), 'c', self.win)
+        drawtxt('The following problems were found:', self.subFont, (0, 0, 0), (self.w * 0.5, self.h * 0.4), 'c', self.win)
 
         o = self.h * 0.6
 
         for i, des in enumerate(self.descrep):
-            text.pydrawtxt(des, self.subFont, (0, 0, 0), (self.w * 0.5, o + self.h * 0.1 * i), 'c', self.win)
+            drawtxt(des, self.subFont, (0, 0, 0), (self.w * 0.5, o + self.h * 0.1 * i), 'c', self.win)
 
         pygame.display.update()
 

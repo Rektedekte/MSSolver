@@ -1,6 +1,6 @@
 from tools.getVars import loadImage, dumpImage, loadTypes, dumpTypes
 from tools.window import Window
-from tools.buttons import Button
+from tools.uielements import Button
 import pygame
 import os
 

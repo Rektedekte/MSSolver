@@ -1,4 +1,4 @@
-from tools.buttons import TextField, InputBox, Button, RadioButtons
+from tools.uielements import TextField, InputBox, Button, RadioButtons
 from tools.calibrate import CalibratePixelSize
 from offsetmanager import OffsetManager
 from imagemanager import ImageManager

@@ -12,10 +12,9 @@ def minimize(hwnd):
 
 
 def restore(hwnd):
-    if foregroundTitle() != 'Minesweeper':
-        win32gui.ShowWindow(hwnd, win32con.SW_MINIMIZE)
-        win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
-        win32gui.SetForegroundWindow(hwnd)
+    win32gui.ShowWindow(hwnd, win32con.SW_MINIMIZE)
+    win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
+    win32gui.SetForegroundWindow(hwnd)
 
 
 def foregroundTitle():
@@ -75,8 +74,6 @@ def GameBox(hwnd=None, o=True):
         return False
 
     settings = getVars.loadSettings()
-    if o:
-        offset = getVars.loadOffset()
 
     mode = settings[5]
 
@@ -90,6 +87,7 @@ def GameBox(hwnd=None, o=True):
         return False
 
     if o:
+        offset = getVars.loadOffset()
         return img[offset[2]:-offset[3], offset[0]:-offset[1], 2::-1]
     return img[:, :, 2::-1]
 

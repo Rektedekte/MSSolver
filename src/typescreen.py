@@ -1,5 +1,5 @@
 from tools.window import Window
-from tools.buttons import Button, TextField
+from tools.uielements import Button, TextField
 from tools.getVars import loadTypes, dumpTypes, dumpImage
 from numpy import average
 import pygame

@@ -1,5 +1,20 @@
 import pygame
-from .text import pydrawtxt
+
+
+def drawtxt(txt, font, color, cord, anchor, win):
+    textSurface = txtSurf(txt, font, color)
+    textSurf, textRect = textSurface, textSurface.get_rect()
+    if anchor == "c":
+        textRect.center = cord
+    elif anchor == "r":
+        textRect.midright = cord
+    elif anchor == "l":
+        textRect.midleft = cord
+    win.blit(textSurface, textRect)
+
+
+def txtSurf(txt, font, color):
+    return font.render(txt, True, color)
 
 
 class Button:
@@ -14,7 +29,7 @@ class Button:
         pygame.draw.rect(win, self.color, self.rect)
         pygame.draw.rect(win, [0]*3 if not focus else (255, 0, 0), self.rect, 2)
         if self.txt:
-            pydrawtxt(self.txt, self.font, [0]*3, (self.rect[0] + self.rect[2]//2, self.rect[1] + self.rect[3]//2), 'c', win)
+            drawtxt(self.txt, self.font, [0] * 3, (self.rect[0] + self.rect[2] // 2, self.rect[1] + self.rect[3] // 2), 'c', win)
 
 
 class InputBox(Button):
@@ -74,7 +89,7 @@ class InputBox(Button):
     def inputBoxDraw(self, win, focus):
         pygame.draw.rect(win, self.color, self.rect)
         pygame.draw.rect(win, [200, 0, 0] if focus else [0]*3, self.rect, 2)
-        pydrawtxt('"{}"'.format(self.txt) if self.t == str else self.txt, self.font, [0]*3, (self.rect[0] + self.rect[2]//2, self.rect[1] + self.rect[3]//2), 'c', win)
+        drawtxt('"{}"'.format(self.txt) if self.t == str else self.txt, self.font, [0] * 3, (self.rect[0] + self.rect[2] // 2, self.rect[1] + self.rect[3] // 2), 'c', win)
 
 
 class TextField:
@@ -85,7 +100,7 @@ class TextField:
         self.anchor = anchor
 
     def draw(self, win):
-        pydrawtxt(self.txt, self.font, [0]*3, self.cord, self.anchor, win)
+        drawtxt(self.txt, self.font, [0] * 3, self.cord, self.anchor, win)
 
 
 class RadioButtons:
@@ -106,4 +121,4 @@ class RadioButtons:
         for button in self.buttons:
             button.draw(win)
 
-        pydrawtxt('X', self.focus.font, [0]*3, (self.focus.rect[0] + self.focus.rect[2]//2, self.focus.rect[1] + self.focus.rect[3]//2), 'c', win)
+        drawtxt('X', self.focus.font, [0] * 3, (self.focus.rect[0] + self.focus.rect[2] // 2, self.focus.rect[1] + self.focus.rect[3] // 2), 'c', win)

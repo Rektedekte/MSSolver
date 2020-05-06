@@ -1,4 +1,4 @@
-from tools.text import pydrawtxt
+from tools.uielements import drawtxt
 from tools.window import Window
 from tools.grab import GameBoxImg
 from tools import getVars
@@ -90,8 +90,8 @@ class OffsetManager(Window):
 
         pygame.draw.rect(self.win, (0, 255, 0), self.box.rect, pw)
 
-        pydrawtxt('Width: {}'.format(self.box.width), self.font, (0, 255, 0), (self.displayWidth * 0.003, self.displayHeight * 0.02), 'l', self.win)
-        pydrawtxt('Height: {}'.format(self.box.height), self.font, (0, 255, 0), (self.displayWidth * 0.003, self.displayHeight * 0.05), 'l', self.win)
+        drawtxt('Width: {}'.format(self.box.width), self.font, (0, 255, 0), (self.displayWidth * 0.003, self.displayHeight * 0.02), 'l', self.win)
+        drawtxt('Height: {}'.format(self.box.height), self.font, (0, 255, 0), (self.displayWidth * 0.003, self.displayHeight * 0.05), 'l', self.win)
 
         pygame.display.update()
 

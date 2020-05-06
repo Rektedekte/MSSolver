@@ -21,16 +21,3 @@ cx_Freeze.setup(
     executables=executables
 
 )
-
-"""import numpy
-import mouse
-import keyboard
-import random
-import sys
-import time
-import os
-import json
-import win32api
-import win32gui
-import win32con
-import win32ui"""
