@@ -1,1 +1,0 @@
-[30, 16, 99, 40, 60, "Window", "Minesweeper"]

@@ -24,8 +24,8 @@ def foregroundTitle():
 def getHandle():
     settings = getVars.loadSettings()
 
-    mode = settings[5]
-    name = settings[6]
+    mode = settings["mode"]
+    name = settings["window_name"]
 
     if mode == 'Window':
         hwnd = win32gui.FindWindow(None, name)
@@ -75,7 +75,7 @@ def GameBox(hwnd=None, o=True):
 
     settings = getVars.loadSettings()
 
-    mode = settings[5]
+    mode = settings["mode"]
 
     try:
         if mode == 'Window':

@@ -15,8 +15,8 @@ class OffsetManager(Window):
 
         vars = getVars.loadSettings()
 
-        self.mode = vars[5]
-        self.windowName = vars[6]
+        self.mode = vars["mode"]
+        self.windowName = vars["window_name"]
 
         self.img = GameBoxImg(o=False)
 

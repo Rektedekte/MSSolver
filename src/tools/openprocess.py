@@ -4,17 +4,17 @@ import pygame
 clock = pygame.time.Clock()
 
 
-def OpenProcess(target, args, source=None, bg=None):
+def openProcess(target, args, source=None, bg=None):
     if source:
         source.minimize()
-        RunProcess(target, args, bg)
+        runProcess(target, args, bg)
         source.restore()
 
     else:
-        RunProcess(target, args, bg)
+        runProcess(target, args, bg)
 
 
-def RunProcess(target, args, bg=None):
+def runProcess(target, args, bg=None):
     running = Array('b', [True])
     try:
         om = Process(target=target, args=tuple(args) + (running,))
@@ -28,7 +28,7 @@ def RunProcess(target, args, bg=None):
         pass
 
 
-def MinimizeAndExecute(target, args, source):
+def minimizeAndExecute(target, args, source):
     source.minimize()
     target(*args)
     source.restore()

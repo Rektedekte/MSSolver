@@ -2,7 +2,7 @@ from tools.uielements import TextField, InputBox, Button, RadioButtons
 from tools.calibrate import CalibratePixelSize
 from offsetmanager import OffsetManager
 from imagemanager import ImageManager
-from tools.openprocess import OpenProcess, MinimizeAndExecute
+from tools.openprocess import openProcess, minimizeAndExecute
 from tools.window import Window
 from tools import getVars
 import pygame
@@ -29,6 +29,8 @@ class SettingsMenu(Window):
         self.createRadioButtons()
         self.createLines()
         self.createButtons()
+
+        self.varNames = getVars.loadSettings().keys()
 
         self.focus = None
         self.run()
@@ -102,25 +104,25 @@ class SettingsMenu(Window):
 
     def callibratePixelSize(self):
         self.dumpVars()
-        MinimizeAndExecute(CalibratePixelSize, [], self)
+        minimizeAndExecute(CalibratePixelSize, [], self)
         self.loadVars()
         self.createInputBoxes()
 
     def openOffsetManager(self):
         self.dumpVars()
-        OpenProcess(OffsetManager, [], self, self.backgroundTick)
+        openProcess(OffsetManager, [], self, self.backgroundTick)
         self.loadVars()
         self.createInputBoxes()
         self.createRadioButtons()
 
     def openImageManager(self):
-        OpenProcess(ImageManager, [], self, self.backgroundTick)
+        openProcess(ImageManager, [], self, self.backgroundTick)
 
     def loadVars(self):
-        self.vars = [[var] for var in getVars.loadSettings()]
+        self.vars = [[var] for var in getVars.loadSettings().values()]
 
     def dumpVars(self):
-        getVars.dumpSettings([var[0] for var in self.vars])
+        getVars.dumpSettings({k: v[0] for k, v in zip(self.varNames, self.vars)})
 
     def draw(self):
         self.win.fill(self.bg_color)

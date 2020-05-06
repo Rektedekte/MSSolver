@@ -47,13 +47,13 @@ class AI:
     def loadVars(self):
         params = loadSettings()
 
-        self.w = params[0]
-        self.h = params[1]
-        self.mineLen = params[2]
-        self.pw = params[3]
-        self.delay = 1 / params[4] * 1.04
-        self.winMode = params[5]
-        self.winTitle = params[6]
+        self.w = params["width"]
+        self.h = params["height"]
+        self.mineLen = params["bombs"]
+        self.pw = params["pixel_width"]
+        self.delay = 1 / params["fps"] * 1.04
+        self.winMode = params["mode"]
+        self.winTitle = params["window_name"]
 
         self.flags = self.mineLen
 

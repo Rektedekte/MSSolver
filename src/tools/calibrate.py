@@ -16,7 +16,7 @@ def CalibratePixelSize():
 
         if source == target:
             v = getVars.loadSettings()
-            v[3] = i
+            v["pixel_width"] = i
             getVars.dumpSettings(v)
             return True
 

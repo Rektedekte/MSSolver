@@ -3,12 +3,12 @@ import numpy
 
 
 def loadSettings():
-    with open('./settings/settings.txt', 'r') as f:
+    with open('./settings/config.txt', 'r') as f:
         return json.load(f)
 
 
 def dumpSettings(obj):
-    with open('./settings/settings.txt', 'w') as f:
+    with open('./settings/config.txt', 'w') as f:
         json.dump(obj, f)
 
 

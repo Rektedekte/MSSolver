@@ -1,4 +1,4 @@
-from tools.openprocess import OpenProcess
+from tools.openprocess import openProcess
 from tools.uielements import Button
 from tools.window import Window
 from settings import SettingsMenu
@@ -25,10 +25,10 @@ class MainScreen(Window):
         self.run()
 
     def solve(self):
-        OpenProcess(AI, [], source=self, bg=self.backgroundTick)
+        openProcess(AI, [], source=self, bg=self.backgroundTick)
 
     def openSettings(self):
-        OpenProcess(SettingsMenu, [], source=self, bg=self.backgroundTick)
+        openProcess(SettingsMenu, [], source=self, bg=self.backgroundTick)
 
     def exit(self):
         sys.exit()

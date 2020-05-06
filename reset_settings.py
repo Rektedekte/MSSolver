@@ -4,7 +4,7 @@ import os
 
 source = 'defaults/'
 target = 'src/settings/'
-all = ['offset.txt', 'types.txt', 'settings.txt']
+all = ['offset.txt', 'types.txt', 'config.txt']
 
 
 def clearImages():
