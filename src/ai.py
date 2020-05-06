@@ -84,7 +84,7 @@ class AI:
             descrep.append('Mine Count greater than total of Width and Height')
 
         if len(descrep) != 0:
-            openprocess.OpenProcess(ErrorScreen, (descrep, ))
+            openprocess.openProcess(ErrorScreen, (descrep, ))
             self.running[0] = False
             sys.exit()
 
@@ -94,7 +94,7 @@ class AI:
         if avg not in self.types.values():
             temp = self.types
 
-            openprocess.OpenProcess(TypeScreen, (self.arr[y * self.pw:(y + 1) * self.pw, x * self.pw:(x + 1) * self.pw],))
+            openprocess.openProcess(TypeScreen, (self.arr[y * self.pw:(y + 1) * self.pw, x * self.pw:(x + 1) * self.pw],))
             self.loadTypes()
 
             if temp == self.types:
@@ -332,18 +332,12 @@ class AI:
             segOuterBorder = self.segregateBorder()
             self.outerBorderTiles = [b for a in segOuterBorder for b in a]
 
-        """if not all(len(segment) < self.BF_LIMIT for segment in segOuterBorder):
-            print('Simple')
-            chanceArr += self.simpleProbability(self.outerBorderTiles)
-
-        else:"""
         for segment in segOuterBorder:
             if len(segment) < self.BF_LIMIT:
                 self.compBorderConfigs = []
                 self.getCompatibleConfigs(segment, [])
 
                 if len(self.compBorderConfigs) == 0:
-                    print('bailing')
                     chanceArr += [0.5 for _ in range(len(segment))]
                     continue
 

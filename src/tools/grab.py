@@ -48,7 +48,7 @@ def GameBoxRect(hwnd=None):
     except:
         return False
 
-    return rect[0] + offset[0], rect[2] - offset[1], rect[1] + offset[2], rect[3] - offset[3]
+    return rect[0] + offset["left"], rect[2] - offset["right"], rect[1] + offset["top"], rect[3] - offset["bottom"]
 
 
 def GameBoxImg(hwnd=None, o=True):
@@ -88,7 +88,7 @@ def GameBox(hwnd=None, o=True):
 
     if o:
         offset = getVars.loadOffset()
-        return img[offset[2]:-offset[3], offset[0]:-offset[1], 2::-1]
+        return img[offset["top"]:-offset["bottom"], offset["left"]:-offset["right"], 2::-1]
     return img[:, :, 2::-1]
 
 

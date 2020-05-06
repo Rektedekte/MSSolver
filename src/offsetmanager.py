@@ -125,10 +125,10 @@ class Box:
         self.disWidth = disWidth
         self.disHeight = disHeight
 
-        self.left = offset[0]
-        self.right = disWidth - offset[1]
-        self.top = offset[2]
-        self.bottom = disHeight - offset[3]
+        self.left = offset["left"]
+        self.right = disWidth - offset["right"]
+        self.top = offset["top"]
+        self.bottom = disHeight - offset["bottom"]
 
         if not self.isValid():
             self.left = 0
@@ -142,7 +142,7 @@ class Box:
 
     @property
     def offset(self):
-        return [self.offsetL, self.offsetR, self.offsetT, self.offsetB]
+        return {"left": self.offsetL, "right": self.offsetR, "top": self.offsetT, "bottom": self.offsetB}
 
     @property
     def offsetL(self):

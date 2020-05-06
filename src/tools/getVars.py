@@ -13,13 +13,13 @@ def dumpSettings(obj):
 
 
 def loadOffset():
-    with open('./settings/offset.txt', 'r') as f:
-        return json.load(f)
+    return loadSettings()["offset"]
 
 
 def dumpOffset(obj):
-    with open('./settings/offset.txt', 'w') as f:
-        json.dump(obj, f)
+    config = loadSettings()
+    config["offset"] = obj
+    dumpSettings(config)
 
 
 def loadTypes():
