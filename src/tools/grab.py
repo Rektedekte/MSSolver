@@ -12,7 +12,6 @@ def minimize(hwnd):
 
 
 def restore(hwnd):
-    win32gui.ShowWindow(hwnd, win32con.SW_MINIMIZE)
     win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
     win32gui.SetForegroundWindow(hwnd)
 
@@ -80,9 +79,7 @@ def GameBox(hwnd=None, o=True):
     try:
         if mode == 'Window':
             restore(hwnd)
-            img = hwndToArr(hwnd)
-        else:
-            img = hwndToArr(hwnd)
+        img = hwndToArr(hwnd)
     except:
         return False
 
@@ -93,8 +90,6 @@ def GameBox(hwnd=None, o=True):
 
 
 def hwndToArr(hwnd):
-    restore(hwnd)
-
     try:
         rect = win32gui.GetWindowRect(hwnd)
         w, h = rect[2] - rect[0], rect[3] - rect[1]

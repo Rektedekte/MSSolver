@@ -37,21 +37,21 @@ class TypeScreen(Window):
     def createButtons(self):
         self.buttons = []
         s = self.w / 5
-        self.none = Button('None', (s * 0, self.h * 0.6, s, self.h * 0.2), None, self.subFont, (240, 240, 240))
-        self.flag = Button('Flag', (s * 1, self.h * 0.6, s, self.h * 0.2), 'Flag', self.subFont, (240, 240, 240))
-        self.mine = Button('Mine', (s * 2, self.h * 0.6, s, self.h * 0.2), 'Mine', self.subFont, (240, 240, 240))
-        self.mineAct = Button('MineA', (s * 3, self.h * 0.6, s, self.h * 0.2), 'Mineact', self.subFont, (240, 240, 240))
-        self.wrongFlag = Button('WrongF', (s * 4, self.h * 0.6, s, self.h * 0.2), 'WrongFlag', self.subFont, (240, 240, 240))
+        self.none = Button('Tile', (s * 0, self.h * 0.6, s, self.h * 0.2), 'tile', self.subFont, (240, 240, 240))
+        self.flag = Button('Flag', (s * 1, self.h * 0.6, s, self.h * 0.2), 'flag', self.subFont, (240, 240, 240))
+        self.mine = Button('Mine', (s * 2, self.h * 0.6, s, self.h * 0.2), 'mine', self.subFont, (240, 240, 240))
+        self.mineAct = Button('MineA', (s * 3, self.h * 0.6, s, self.h * 0.2), 'activated_mine', self.subFont, (240, 240, 240))
+        self.wrongFlag = Button('WrongF', (s * 4, self.h * 0.6, s, self.h * 0.2), 'incorrect_flag', self.subFont, (240, 240, 240))
         s = self.w / 9
-        self.zero = Button('0', (s * 0, self.h * 0.8, s, self.h * 0.2), 0, self.subFont, (240, 240, 240))
-        self.one = Button('1', (s * 1, self.h * 0.8, s, self.h * 0.2), 1, self.subFont, (240, 240, 240))
-        self.two = Button('2', (s * 2, self.h * 0.8, s, self.h * 0.2), 2, self.subFont, (240, 240, 240))
-        self.three = Button('3', (s * 3, self.h * 0.8, s, self.h * 0.2), 3, self.subFont, (240, 240, 240))
-        self.four = Button('4', (s * 4, self.h * 0.8, s, self.h * 0.2), 4, self.subFont, (240, 240, 240))
-        self.five = Button('5', (s * 5, self.h * 0.8, s, self.h * 0.2), 5, self.subFont, (240, 240, 240))
-        self.six = Button('6', (s * 6, self.h * 0.8, s, self.h * 0.2), 6, self.subFont, (240, 240, 240))
-        self.seven = Button('7', (s * 7, self.h * 0.8, s, self.h * 0.2), 7, self.subFont, (240, 240, 240))
-        self.eight = Button('8', (s * 8, self.h * 0.8, s, self.h * 0.2), 8, self.subFont, (240, 240, 240))
+        self.zero = Button('0', (s * 0, self.h * 0.8, s, self.h * 0.2), '0', self.subFont, (240, 240, 240))
+        self.one = Button('1', (s * 1, self.h * 0.8, s, self.h * 0.2), '1', self.subFont, (240, 240, 240))
+        self.two = Button('2', (s * 2, self.h * 0.8, s, self.h * 0.2), '2', self.subFont, (240, 240, 240))
+        self.three = Button('3', (s * 3, self.h * 0.8, s, self.h * 0.2), '3', self.subFont, (240, 240, 240))
+        self.four = Button('4', (s * 4, self.h * 0.8, s, self.h * 0.2), '4', self.subFont, (240, 240, 240))
+        self.five = Button('5', (s * 5, self.h * 0.8, s, self.h * 0.2), '5', self.subFont, (240, 240, 240))
+        self.six = Button('6', (s * 6, self.h * 0.8, s, self.h * 0.2), '6', self.subFont, (240, 240, 240))
+        self.seven = Button('7', (s * 7, self.h * 0.8, s, self.h * 0.2), '7', self.subFont, (240, 240, 240))
+        self.eight = Button('8', (s * 8, self.h * 0.8, s, self.h * 0.2), '8', self.subFont, (240, 240, 240))
 
         self.buttons = [self.none, self.flag, self.mine, self.mineAct, self.wrongFlag, self.zero, self.one,
                         self.two, self.three, self.four, self.five, self.six, self.seven, self.eight]

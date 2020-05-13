@@ -24,18 +24,7 @@ def dumpOffset(obj):
 
 def loadTypes():
     with open('./settings/types.txt', 'r') as f:
-        d = json.load(f)
-
-    nd = {}
-    for key, val in d.items():
-        if key == 'null':
-            nd[None] = val
-        elif key in ['0', '1', '2', '3', '4', '5', '6', '7', '8']:
-            nd[int(key)] = val
-        else:
-            nd[key] = val
-
-    return nd
+        return json.load(f)
 
 
 def dumpTypes(obj):

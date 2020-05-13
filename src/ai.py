@@ -16,30 +16,39 @@ class AI:
             running = [True]
         self.running = running
 
+        self.typesTable = {
+            't': ['tile'],
+            'i': ['0', '1', '2', '3', '4', '5', '6', '7', '8'],
+            'f': ['flag'],
+            'm': ['mine', 'activated_mine']
+        }
+
+        self.box = grab.GameBoxRect()
+        if not self.box:
+            self.running[0] = False
+            sys.exit()
+
         self.loadVars()
         self.loadTypes()
-        self.getBox()
-        self.getArr()
-        self.getGrid()
+
+        self.grid = [['tile' for j in range(self.w)] for i in range(self.h)]
+
+        self.updateGrid()
         self.checkForDescreps()
 
-        self.revealed = []
         self.outerBorderTiles = []
         self.innerBorderTiles = []
         self.compBorderConfigs = []
-        self.innerExclude = []
-        self.outerExclude = []
-        self.emptyTiles = []
 
-        self.clickMode = 'Collective'
         self.BF_LIMIT = 17
         self.endGame = False
-        self.moves = []
 
         self.run()
 
     def loadTypes(self):
         self.types = loadTypes()
+        self.typesValues = list(self.types.values())
+        self.typesKeys = list(self.types.keys())
 
     def dumpTypes(self):
         dumpTypes(self.types)
@@ -50,35 +59,97 @@ class AI:
         self.w = params["width"]
         self.h = params["height"]
         self.mineLen = params["bombs"]
-        self.pw = params["pixel_width"]
+        self.pw = (self.box[1] - self.box[0]) // self.w
         self.delay = 1 / params["fps"] * 1.04
         self.winMode = params["mode"]
         self.winTitle = params["window_name"]
 
-        self.flags = self.mineLen
-
     @property
-    def hasWon(self):
-        self.getEmpty()
-        return len(self.emptyTiles) == 0
-
-    @property
-    def open(self):
+    def windowOpen(self):
         return self.winMode == 'Fullscreen' or grab.foregroundTitle() == self.winTitle
 
     @property
     def emptyGrid(self):
         for i in range(self.h):
             for j in range(self.w):
-                if self.grid[i][j] is not None:
+                if self.grid[i][j] != 'tile':
                     return False
+
         return True
+
+    @property
+    def fullGrid(self):
+        for i in range(self.h):
+            for j in range(self.w):
+                if self.grid[i][j] == 'tile':
+                    return False
+
+        return True
+
+    def find(self, t):
+        content = self.typesTable[t]
+        matches = []
+
+        for i in range(self.h):
+            for j in range(self.w):
+                if self.grid[i][j] in content:
+                    matches.append([i, j])
+
+        return matches
+
+    def findLen(self, t):
+        content = self.typesTable[t]
+        c = 0
+
+        for i in range(self.h):
+            for j in range(self.w):
+                if self.grid[i][j] in content:
+                    c += 1
+
+        return c
+
+    def neighbors(self, i, j):
+        return [[i+y, j+x] for y, x in [[1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1], [0, 1]] if 0 <= i+y < self.h and 0 <= j+x < self.w]
+
+    def sorroundingFind(self, i, j, t):
+        content = self.typesTable[t]
+        return [[y, x] for y, x in self.neighbors(i, j) if self.grid[y][x] in content]
+
+    def sorroundingFindLen(self, i, j, t):
+        content = self.typesTable[t]
+        c = 0
+
+        for y, x in self.neighbors(i, j):
+            if self.grid[y][x] in content:
+                c += 1
+
+        return c
+
+    def getSharingBorderPoint(self, i, j):
+        related = []
+
+        for y, x in self.sorroundingFind(i, j, 't'):
+            for n, m in self.sorroundingFind(y, x, 'i'):
+                if n != i or m != j:
+                    related.append([n, m])
+
+        return related
+
+    def getSharingBorderPointLen(self, i, j):
+        c = 0
+
+        for y, x in self.sorroundingFind(i, j, 't'):
+            for n, m in self.sorroundingFind(y, x, 'i'):
+                if n != i or m != j:
+                    c += 1
+
+        return c
 
     def checkForDescreps(self):
         descrep = []
-        if self.w * self.pw != self.box[2] - self.box[0]:
+        if self.w * self.pw != self.box[1] - self.box[0]:
             descrep.append('Width and Pixel Width do not match up with window dimensions')
-        if self.h * self.pw != self.box[3] - self.box[1]:
+        if self.h * self.pw != self.box[3] - self.box[2]:
             descrep.append('Height and Pixel Height do not match up with window dimensions')
         if self.mineLen > self.w * self.h:
             descrep.append('Mine Count greater than total of Width and Height')
@@ -88,10 +159,32 @@ class AI:
             self.running[0] = False
             sys.exit()
 
-    def getType(self, y, x, init=False):
+    def updateGrid(self):
+        self.arr = grab.GameBox()
+        if type(self.arr) == bool:
+            self.running[0] = False
+            sys.exit()
+
+        for i in range(self.h):
+            for j in range(self.w):
+                self.grid[i][j] = self.readType(i, j)
+
+    def updateBorder(self):
+        self.outerBorderTiles = []
+        self.innerBorderTiles = []
+
+        for i, j in self.find('i'):
+            sorroundingTiles = self.sorroundingFind(i, j, 't')
+            if sorroundingTiles:
+                self.innerBorderTiles.append([i, j])
+                for y, x in sorroundingTiles:
+                    if [y, x] not in self.outerBorderTiles:
+                        self.outerBorderTiles.append([y, x])
+
+    def readType(self, y, x):
         avg = numpy.average(self.arr[y*self.pw:(y+1)*self.pw, x*self.pw:(x+1)*self.pw])
 
-        if avg not in self.types.values():
+        if avg not in self.typesValues:
             temp = self.types
 
             openprocess.openProcess(TypeScreen, (self.arr[y * self.pw:(y + 1) * self.pw, x * self.pw:(x + 1) * self.pw],))
@@ -101,17 +194,15 @@ class AI:
                 self.running[0] = False
                 sys.exit()
 
-        ty = list(self.types.keys())[list(self.types.values()).index(avg)]
+        ty = self.typesKeys[self.typesValues.index(avg)]
 
-        if ty == "Flag" and init:
-            self.flags -= 1
-        if ty in ["Mine", "Mineact", "WrongFlag"]:
+        if ty in ["mine", "activated_mine", "incorrect_flag"]:
             self.running[0] = False
             sys.exit()
         return ty
 
     def doMove(self, y, x, c):
-        mouse.move(self.box[0] + (x + 0.5) * self.pw, self.box[1] + (y + 0.5) * self.pw)
+        mouse.move(self.box[0] + (x + 0.5) * self.pw, self.box[2] + (y + 0.5) * self.pw)
 
         if c in ['r', 'l']:
             if c == 'l':
@@ -123,34 +214,21 @@ class AI:
                 sleep(self.delay)
                 mouse.release('right')
         else:
+            mouse.click('left')
             keyboard.press('space')
             sleep(self.delay)
             keyboard.release('space')
 
-    def doMoveWithUpdate(self, y, x, c):
-        self.doMove(y, x, c)
-
-        if c == 'r':
-            self.flags -= 1
-            self.grid[y][x] = 'Flag'
-        elif c == 's':
-            self.getArr()
-            for i, j in self.getSorroundingOfType(y, x, None):
-                self.updateGrid(i, j)
-        else:
-            self.getArr()
-            self.updateGrid(y, x)
-
     def randomMove(self):
         x, y = random.randint(0, self.w-1), random.randint(0, self.h-1)
-        while self.grid[y][x] is not None:
+        while self.grid[y][x] != 'tile':
             x, y = random.randint(0, self.w - 1), random.randint(0, self.h - 1)
         return y, x, 'l'
 
     def randomBorderMove(self):
         i = random.randint(0, len(self.outerBorderTiles) - 1)
         y, x = self.outerBorderTiles[i]
-        while self.grid[y][x] is not None:
+        while self.grid[y][x] != 'tile':
             i = random.randint(0, len(self.outerBorderTiles) - 1)
             y, x = self.outerBorderTiles[i]
         return y, x, 'l'
@@ -158,106 +236,36 @@ class AI:
     def centerMove(self):
         return self.h//2, self.w//2, 'l'
 
-    def updateGrid(self, i, j):
-        if [i, j] not in self.revealed:
-            ty = self.getType(i, j)
-            if ty in range(0, 9):
-                self.revealed.append([i, j])
-            if self.grid[i][j] != ty:
-                self.grid[i][j] = ty
-                for y, x in self.getNeigh(i, j):
-                    self.updateGrid(y, x)
+    def getCompatibleConfigs(self, bordertiles, arr, k=0):
+        for i, j in self.innerBorderTiles:
+            numFlags = len(self.sorroundingFind(i, j, 'f'))
 
-    def getNeigh(self, i, j):
-        return [[i+y, j+x] for y, x in [[1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1], [0, 1]] if 0 <= i+y < self.h and 0 <= j+x < self.w]
+            if numFlags > int(self.grid[i][j]):
+                return
 
-    def getSorroundingOfType(self, i, j, t):
-        if type(t) in [iter, object, list, tuple, range]:
-            return [[i, j] for i, j in self.getNeigh(i, j) if self.grid[i][j] in t]
-        return [[i, j] for i, j in self.getNeigh(i, j) if self.grid[i][j] == t]
+            if all(point in bordertiles[:k] for point in self.sorroundingFind(i, j, 't')):
+                if numFlags != int(self.grid[i][j]):
+                    return
 
-    def getRelated(self, i, j):
-        return [[k + i, l + j] for k in range(-2, 3) for l in range(-2, 3) if [k, l] != [0, 0] and 0 <= k + i < self.h and 0 <= l + j < self.w]
+        if k >= len(bordertiles):
+            flagLen = self.findLen('f')
 
-    def getRelatedThatShares(self, i, j):
-        for y, x in self.getRelated(i, j):
-            if self.grid[y][x] in range(1, 9):
-                yield [y, x]
+            if not flagLen > self.mineLen:
+                if not self.endGame or flagLen == self.mineLen:
+                    self.compBorderConfigs.append(arr[:])
+            return
 
-    def getBox(self):
-        box = grab.GameBoxRect()
-        if not box:
-            self.running[0] = False
-            sys.exit()
-        self.box = box[0], box[2], box[1], box[3]
+        arr.append(True)
+        self.grid[bordertiles[k][0]][bordertiles[k][1]] = 'flag'
+        self.getCompatibleConfigs(bordertiles, arr, k+1)
+        arr.pop(k)
+        self.grid[bordertiles[k][0]][bordertiles[k][1]] = 'tile'
 
-    def getArr(self):
-        self.arr = grab.GameBox()
-        if type(self.arr) == bool:
-            self.running[0] = False
-            sys.exit()
-
-    def getGrid(self):
-        self.grid = [[None for j in range(self.w)] for i in range(self.h)]
-
-        for i in range(self.h):
-            for j in range(self.w):
-                self.grid[i][j] = self.getType(i, j, init=True)
-
-    def getEmpty(self):
-        self.emptyTiles = []
-
-        for i in range(self.h):
-            for j in range(self.w):
-                if self.grid[i][j] is None:
-                    self.emptyTiles.append([i, j])
-
-    def getFlags(self):
-        flags = []
-
-        for i in range(self.h):
-            for j in range(self.w):
-                if self.grid[i][j] == 'Flag':
-                    flags.append([i, j])
-
-        return flags
-
-    def getBorder(self):
-        self.outerBorderTiles = []
-        self.innerBorderTiles = []
-
-        for i in range(self.h):
-            for j in range(self.w):
-                if self.grid[i][j] is None:
-                    s = self.getSorroundingOfType(i, j, range(1, 9))
-                    if s:
-                        self.outerBorderTiles.append([i, j])
-                        for y, x in s:
-                            if [y, x] not in self.innerBorderTiles:
-                                self.innerBorderTiles.append([y, x])
-
-    def isValid(self, bordertiles):
-        """innerBorder = []
-
-        for y, x in bordertiles:
-            for i, j in self.getSorroundingOfType(y, x, range(1, 9)):
-                if [i, j] not in innerBorder:
-                    innerBorder.append([i, j])
-
-        for i, j in innerBorder:
-            if self.grid[i][j] != len(self.getSorroundingOfType(i, j, 'Flag')):
-                return False"""
-
-        flagLen = len(self.getFlags())
-
-        if flagLen > self.mineLen:
-            return False
-
-        if self.endGame:
-            if flagLen != self.mineLen:
-                return False
-
-        return True
+        arr.append(False)
+        self.grid[bordertiles[k][0]][bordertiles[k][1]] = 'tile'
+        self.getCompatibleConfigs(bordertiles, arr, k+1)
+        arr.pop(k)
+        self.grid[bordertiles[k][0]][bordertiles[k][1]] = 'tile'
 
     def segregateBorder(self):
         if len(self.innerBorderTiles) == 0:
@@ -272,7 +280,7 @@ class AI:
             while start in closed:
                 start = self.innerBorderTiles[random.randint(0, len(self.innerBorderTiles) - 1)]
 
-            segment = []
+            segment = self.sorroundingFind(*start, 't')
             innerSegment = [start]
             self.recurseSegregate(*start, segment, innerSegment)
 
@@ -282,9 +290,9 @@ class AI:
         return segOuter
 
     def recurseSegregate(self, i, j, r, s):
-        for k, l in self.getRelatedThatShares(i, j):
+        for k, l in self.getSharingBorderPoint(i, j):
             if [k, l] not in s:
-                for n, m in self.getSorroundingOfType(k, l, None):
+                for n, m in self.sorroundingFind(k, l, 't'):
                     if [n, m] not in r:
                         r.append([n, m])
 
@@ -297,12 +305,12 @@ class AI:
         for i, j, in segment:
             pos = []
 
-            for y, x in self.getSorroundingOfType(i, j, range(1, 9)):
-                chance = (self.grid[y][x] - len(self.getSorroundingOfType(y, x, 'Flag'))) / len(self.getSorroundingOfType(y, x, None))
+            for y, x in self.sorroundingFind(i, j, 'i'):
+                chance = (int(self.grid[y][x]) - self.sorroundingFindLen(y, x, 'f')) / self.sorroundingFindLen(y, x, 't')
                 pos.append(chance)
 
             if len(pos) == 0:
-                lst.append(len(self.emptyTiles) / (self.mineLen - len(self.getFlags())))
+                lst.append(self.findLen('t') / (self.mineLen - self.findLen('f')))
 
             else:
                 lst.append(max(pos))
@@ -310,19 +318,19 @@ class AI:
         return lst
 
     def probabilityMove(self):
-        self.getEmpty()
+        emptyTiles = self.find('t')
         chanceArr = []
 
         if len(self.outerBorderTiles) == 0:
-            if len(self.emptyTiles):
+            if len(emptyTiles):
                 self.doMove(*self.randomMove())
             return
 
         self.endGame = False
 
-        if len(self.emptyTiles) < self.BF_LIMIT:
-            segOuterBorder = [self.emptyTiles]
-            self.outerBorderTiles = self.emptyTiles
+        if len(emptyTiles) < self.BF_LIMIT:
+            segOuterBorder = [emptyTiles]
+            self.outerBorderTiles = emptyTiles
             self.endGame = True
 
         elif len(self.outerBorderTiles) < self.BF_LIMIT:
@@ -363,7 +371,7 @@ class AI:
                 s = True
 
             elif chanceArr[i] == 1.0:
-                self.doMove(self.outerBorderTiles[i][0], self.outerBorderTiles[i][1], 'l')
+                self.doMove(self.outerBorderTiles[i][0], self.outerBorderTiles[i][1], 'r')
                 s = True
 
         if s:
@@ -373,136 +381,70 @@ class AI:
         y, x = self.outerBorderTiles[i]
         self.doMove(y, x, 'l')
 
-    def getCompatibleConfigs(self, bordertiles, arr, k=0):
-        for i, j in self.innerBorderTiles:
-            numFlags = len(self.getSorroundingOfType(i, j, 'Flag'))
-
-            if numFlags > self.grid[i][j]:
-                return
-
-            if all(point in bordertiles[:k] for point in self.getSorroundingOfType(i, j, None)):
-                if numFlags != self.grid[i][j]:
-                    return
-
-        if k >= len(bordertiles):
-            if self.isValid(bordertiles):
-                self.compBorderConfigs.append(arr[:])
-            return
-
-        arr.append(True)
-        self.grid[bordertiles[k][0]][bordertiles[k][1]] = 'Flag'
-        self.getCompatibleConfigs(bordertiles, arr, k+1)
-        arr.pop(k)
-        self.grid[bordertiles[k][0]][bordertiles[k][1]] = None
-
-        arr.append(False)
-        self.grid[bordertiles[k][0]][bordertiles[k][1]] = None
-        self.getCompatibleConfigs(bordertiles, arr, k+1)
-        arr.pop(k)
-        self.grid[bordertiles[k][0]][bordertiles[k][1]] = None
-
-    def simpleMovesCollective(self):
-        self.innerExclude = []
-        self.outerExclude = []
-        self.getBorder()
-
-        for i, j in self.innerBorderTiles:
-            if [i, j] not in self.innerExclude:
-                if len(self.getSorroundingOfType(i, j, None)) != 0:
-                    if self.grid[i][j] == len(self.getSorroundingOfType(i, j, None)) + len(self.getSorroundingOfType(i, j, 'Flag')):
-                        for y, x in self.getSorroundingOfType(i, j, None):
-                            if [y, x] not in self.outerExclude:
-                                self.moves.append((y, x, 'r'))
-                                self.outerExclude.append([y, x])
-                        self.innerExclude.append([i, j])
-
-        for i, j in self.innerBorderTiles:
-            if [i, j] not in self.innerExclude:
-                if self.grid[i][j] == len(self.getSorroundingOfType(i, j, 'Flag')):
-                    if len(self.getSorroundingOfType(i, j, None)) == 0:
-                        for y, x in self.getSorroundingOfType(i, j, None):
-                            if [y, x] not in self.outerExclude:
-                                self.outerExclude.append([y, x])
-                        self.moves.append((i, j, 's'))
-                        self.innerExclude.append([i, j])
-
-        if len(self.moves) == 0:
-            for i, j in self.innerBorderTiles:
-                if [i, j] not in self.innerExclude:
-                    for y, x in [[y, x] for y, x in self.getRelated(i, j) if self.grid[y][x] in range(1, 9)]:
-                        a = self.getSorroundingOfType(y, x, None)
-                        b = self.getSorroundingOfType(i, j, None)
-                        shared = [point for point in a if point in b]
-                        if self.grid[y][x] - len(self.getSorroundingOfType(y, x, 'Flag')) - (len(a) - len(shared)) == \
-                            self.grid[i][j] - len(self.getSorroundingOfType(i, j, 'Flag')):
-                            for k, l in [point for point in b if point not in a]:
-                                if [k, l] not in self.outerExclude:
-                                    self.moves.append((k, l, 'l'))
-                                    self.outerExclude.append([k, l])
-
-            for i, j in self.innerBorderTiles:
-                if [i, j] not in self.innerExclude:
-                    for y, x in [[y, x] for y, x in self.getRelated(i, j) if self.grid[y][x] in range(1, 9)]:
-                        a = self.getSorroundingOfType(y, x, None)
-                        b = self.getSorroundingOfType(i, j, None)
-                        shared = [point for point in a if point in b]
-                        if self.grid[i][j] - len(self.getSorroundingOfType(i, j, 'Flag')) > self.grid[y][x] - len(self.getSorroundingOfType(y, x, 'Flag')):
-                            if (self.grid[i][j] - len(self.getSorroundingOfType(i, j, 'Flag'))) - (self.grid[y][x] - len(self.getSorroundingOfType(y, x, 'Flag'))) == len(b) - len(shared):
-                                for k, l in [point for point in b if point not in a]:
-                                    if [k, l] not in self.outerExclude:
-                                        self.moves.append((k, l, 'r'))
-                                        self.outerExclude.append([k, l])
-
-        self.moves = list(dict.fromkeys(self.moves))
-
     def simpleMoves(self):
-        temp = [list(row) for row in self.grid]
-
-        self.getBorder()
         for i, j in self.innerBorderTiles:
-            if self.grid[i][j] == len(self.getSorroundingOfType(i, j, None)) + len(self.getSorroundingOfType(i, j, 'Flag')):
-                for y, x in self.getNeigh(i, j):
-                    if self.grid[y][x] is None:
-                        self.doMoveWithUpdate(y, x, 'r')
 
-        self.getBorder()
+            pointNum = int(self.grid[i][j])
+            sorroundingTiles = self.sorroundingFind(i, j, 't')
+            sorroundingFlagsLen = self.sorroundingFindLen(i, j, 'f')
+
+            if pointNum == len(sorroundingTiles) + sorroundingFlagsLen:
+                for y, x in sorroundingTiles:
+                    yield y, x, 'r'
+
         for i, j in self.innerBorderTiles:
-            if self.grid[i][j] == len(self.getSorroundingOfType(i, j, 'Flag')):
-                if len(self.getSorroundingOfType(i, j, None)) == 0:
-                    self.doMoveWithUpdate(i, j, 's')
 
-        self.getBorder()
+            pointNum = int(self.grid[i][j])
+            sorroundingFlagsLen = self.sorroundingFindLen(i, j, 'f')
+
+            if pointNum == sorroundingFlagsLen:
+                yield i, j, 's'
+
         for i, j in self.innerBorderTiles:
-            for y, x in [[y, x] for y, x in self.getRelated(i, j) if self.grid[y][x] in range(1, 9)]:
-                a = self.getSorroundingOfType(y, x, None)
-                b = self.getSorroundingOfType(i, j, None)
-                shared = [point for point in a if point in b]
-                if self.grid[y][x] - len(self.getSorroundingOfType(y, x, 'Flag')) - len(a) + len(shared) == self.grid[i][j] - len(self.getSorroundingOfType(i, j, 'Flag')):
-                    for k, l in [point for point in b if point not in a]:
-                        self.doMoveWithUpdate(k, l, 'l')
 
-        self.getBorder()
+            sharingPoints = self.getSharingBorderPoint(i, j)
+            sourceSorroundingTiles = self.sorroundingFind(i, j, 't')
+            sourceSorroundingFlags = self.sorroundingFind(i, j, 'f')
+            sourceNum = int(self.grid[i][j])
+
+            for y, x in sharingPoints:
+
+                targetSorroundingTiles = self.sorroundingFind(y, x, 't')
+                targetSorroundingFlagsLen = self.sorroundingFindLen(y, x, 'f')
+                targetNum = int(self.grid[y][x])
+
+                sharedSorroundingTiles = [point for point in targetSorroundingTiles if point in sourceSorroundingTiles]
+                sourceExclusiveSorroundingTiles = [point for point in sourceSorroundingTiles if point not in targetSorroundingTiles]
+
+                if targetNum - targetSorroundingFlagsLen - (len(targetSorroundingTiles) - len(sharedSorroundingTiles)) == sourceNum - len(sourceSorroundingFlags):
+                    for k, l in sourceExclusiveSorroundingTiles:
+                        yield k, l, 'l'
+
         for i, j in self.innerBorderTiles:
-            for y, x in [[y, x] for y, x in self.getRelated(i, j) if self.grid[y][x] in range(1, 9)]:
-                a = self.getSorroundingOfType(y, x, None)
-                b = self.getSorroundingOfType(i, j, None)
-                shared = [point for point in a if point in b]
-                if self.grid[i][j] - len(self.getSorroundingOfType(i, j, 'Flag')) > self.grid[y][x] - len(self.getSorroundingOfType(y, x, 'Flag')):
-                    if (self.grid[i][j] - len(self.getSorroundingOfType(i, j, 'Flag'))) - (self.grid[y][x] - len(self.getSorroundingOfType(y, x, 'Flag'))) == len(b) - len(shared):
-                        for k, l in [point for point in b if point not in a]:
-                            self.doMoveWithUpdate(k, l, 'r')
 
-        if temp == self.grid:
-            return True
-        return False
+            sharingPoints = self.getSharingBorderPoint(i, j)
+            sourceSorroundingTiles = self.sorroundingFind(i, j, 't')
+            sourceSorroundingFlagsLen = self.sorroundingFindLen(i, j, 'f')
+            sourceNum = int(self.grid[i][j])
+
+            for y, x in sharingPoints:
+                targetSorroundingTiles = self.sorroundingFind(y, x, 't')
+                targetSorroundingFlagsLen = self.sorroundingFindLen(y, x, 'f')
+                targetNum = int(self.grid[y][x])
+
+                sharedSorroundingTiles = [point for point in targetSorroundingTiles if point in sourceSorroundingTiles]
+                sourceExclusiveSorroundingTiles = [point for point in sourceSorroundingTiles if point not in targetSorroundingTiles]
+
+                if sourceNum - sourceSorroundingFlagsLen > targetNum - targetSorroundingFlagsLen:
+                    if (sourceNum - sourceSorroundingFlagsLen) - (targetNum - targetSorroundingFlagsLen) == len(sourceSorroundingTiles) - len(sharedSorroundingTiles):
+                        for k, l in sourceExclusiveSorroundingTiles:
+                            yield k, l, 'r'
 
     def wait(self):
         while True:
-            if self.open:
-                self.getBox()
-                self.getArr()
+            if self.windowOpen:
                 self.checkForDescreps()
-                self.getGrid()
+                self.updateGrid()
                 return
             sleep(1)
 
@@ -513,26 +455,19 @@ class AI:
         self.solve()
 
     def solve(self):
-        while self.open and not self.hasWon:
-            self.getArr()
-            self.getGrid()
-            self.getBorder()
+        while self.windowOpen and not self.fullGrid:
+            self.updateGrid()
+            self.updateBorder()
 
-            if self.clickMode == 'Collective':
-                self.simpleMovesCollective()
+            moves = self.simpleMoves()
 
-                if not self.moves:
-                    self.probabilityMove()
+            already_done = []
+            for move in moves:
+                if move not in already_done:
+                    already_done.append(move)
+                    self.doMove(*move)
 
-                else:
-                    for move in self.moves:
-                        self.doMove(*move)
-
-                    self.moves = []
-
-            else:
-
-                if self.simpleMoves():
-                    self.probabilityMove()
+            if not already_done:
+                self.probabilityMove()
 
         self.running[0] = False

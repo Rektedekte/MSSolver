@@ -16,7 +16,7 @@ required = []
 failed = []
 
 inf = sys.version_info
-if inf.major != 3 or (inf.minor != 5 or inf.minor != 6):
+if inf.major != 3 or (inf.minor != 5 and inf.minor != 6):
     print('ERROR: This library only supports python 3.5 or 3.6, not python {}.'.format('{}.{}'.format(inf.major, inf.minor)))
     sys.exit()
 

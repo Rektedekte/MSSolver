@@ -11,12 +11,12 @@ class ImageManager(Window):
             running = [True]
         self.running = running
 
-        super().__init__(600, 700, 'Image Manager')
+        super().__init__(650, 700, 'Image Manager')
 
         self.txtFont = pygame.font.Font('fonts/OpenSans-Light.ttf', 30)
 
-        self.vars = [*list(range(9)), None, 'Flag', 'Mine', 'MineAct', 'WrongFlag']
         self.types = loadTypes()
+        self.vars = list(self.types.keys())
 
         self.createTxtFields()
         self.createImgs()
@@ -25,7 +25,7 @@ class ImageManager(Window):
         self.run()
 
     def createTxtFields(self):
-        s = self.h / 14
+        s = self.h / len(self.vars)
         f = self.w / 3
 
         self.txtFields = []
@@ -46,7 +46,7 @@ class ImageManager(Window):
                 self.imgs.append(None)
 
     def createButtons(self):
-        s = self.h / 14
+        s = self.h / len(self.vars)
         o = self.w / 3 * 2
         f = self.w / 3
 

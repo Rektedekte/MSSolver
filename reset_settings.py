@@ -4,23 +4,20 @@ import os
 
 source = 'defaults/'
 target = 'src/settings/'
-all = ['offset.txt', 'types.txt', 'config.txt']
+all = ['types.txt', 'config.txt']
 
 
 def clearImages():
     for file in os.listdir('src/images'):
-        os.remove('src/images/{}'.format(file))
+        if file != ".gitignore":
+            os.remove('src/images/{}'.format(file))
 
 
 def reset(args):
-    vs = []
     for arg in args:
-        with open(source + arg, 'r') as f:
-            vs.append(json.load(f))
-
-    for dump, arg in zip(vs, args):
-        with open(target + arg, 'w+') as f:
-            json.dump(dump, f)
+        with open(source + arg, 'r') as s:
+            with open(target + arg, 'w+') as t:
+                json.dump(json.load(s), t)
 
 
 def main():

@@ -1,1 +1,1 @@
-{"width": 30, "height": 16, "bombs": 99, "pixel_width": 24, "fps": 60, "mode": "Fullscreen", "window_name": "Minesweeper", "offset": {"left": 355, "right": 845, "top": 193, "bottom": 503}}
+{"width": 30, "height": 16, "bombs": 99, "pixel_width": 40, "fps": 300, "mode": "Window", "window_name": "Minesweeper", "offset": {"left": 8, "right": 8, "top": 91, "bottom": 8}}

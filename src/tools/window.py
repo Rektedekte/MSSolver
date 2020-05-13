@@ -1,4 +1,4 @@
-from win32gui import FindWindow, ShowWindow, MoveWindow, SetForegroundWindow
+from win32gui import FindWindow, ShowWindow, MoveWindow, SetForegroundWindow, GetWindowText
 from win32con import SW_MINIMIZE, SW_RESTORE
 import pygame
 import sys
@@ -32,7 +32,10 @@ class Window:
 
     def restore(self):
         ShowWindow(self.hwnd, SW_RESTORE)
-        SetForegroundWindow(self.hwnd)
+        try:
+            SetForegroundWindow(self.hwnd)
+        except:
+            pass
 
     def move(self, l, t):
         MoveWindow(self.hwnd, l - 7, t,  l + self.win.get_width() + 14, t + self.win.get_height() + 45, True)
