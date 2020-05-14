@@ -1,5 +1,4 @@
-from tools.uielements import TextField, InputBox, Button, RadioButtons
-from tools.calibrate import CalibratePixelSize
+from tools.uielements import TextField, InputBox, Button, RadioButtons, KeyInputBox
 from offsetmanager import OffsetManager
 from imagemanager import ImageManager
 from tools.openprocess import openProcess, minimizeAndExecute
@@ -10,7 +9,7 @@ import pygame
 
 class SettingsMenu(Window):
     def __init__(self, running=None):
-        super().__init__(500, 550, 'Settings')
+        super().__init__(500, 600, 'Settings')
 
         if running is None:
             running = [True]
@@ -36,59 +35,68 @@ class SettingsMenu(Window):
         self.run()
 
     def createTxtFields(self):
-        self.titleField = TextField('Settings', (self.w // 2, self.h * 0.043), self.titleFont, 'c')
-
         left = self.w * 0.05
 
-        self.txtField1 = TextField('Width:', (left, self.h * 0.15), self.txtFieldFont, 'l')
-        self.txtField2 = TextField('Height:', (left, self.h * 0.21), self.txtFieldFont, 'l')
-        self.txtField3 = TextField('Mine Count:', (left, self.h * 0.27), self.txtFieldFont, 'l')
+        self.txtFields = [
+            TextField('Settings', (self.w // 2, self.h * 0.035), self.titleFont, 'c'),
 
-        self.txtField4 = TextField('Pixel Size:', (left, self.h * 0.37), self.txtFieldFont, 'l')
-        self.txtField5 = TextField('FPS:', (left, self.h * 0.43), self.txtFieldFont, 'l')
+            TextField('Width:', (left, self.h * 0.125), self.txtFieldFont, 'l'),
+            TextField('Height:', (left, self.h * 0.185), self.txtFieldFont, 'l'),
+            TextField('Mine Count:', (left, self.h * 0.245), self.txtFieldFont, 'l'),
 
-        self.txtField6 = TextField('Image Mode:', (self.w//2, self.h * 0.64), self.txtFieldFont, 'c')
-        self.txtField7 = TextField('Window:', (left, self.h * 0.70), self.txtFieldFont, 'l')
-        self.txtField8 = TextField('Full Screen:', (left, self.h * 0.76), self.txtFieldFont, 'l')
+            TextField('BF_LIMIT:', (left, self.h * 0.325), self.txtFieldFont, 'l'),
+            TextField('FPS:', (left, self.h * 0.385), self.txtFieldFont, 'l'),
 
-        self.txtField9 = TextField('Win Name:', (left, self.h * 0.86), self.txtFieldFont, 'l')
+            TextField('Reveal Field:', (left, self.h * 0.465), self.txtFieldFont, 'l'),
+            TextField('Place Flag:', (left, self.h * 0.525), self.txtFieldFont, 'l'),
+            TextField('Reveal Neigh:', (left, self.h * 0.585), self.txtFieldFont, 'l'),
 
-        self.txtFields = [self.titleField, self.txtField1, self.txtField2, self.txtField3, self.txtField4, self.txtField5, self.txtField6, self.txtField7, self.txtField8, self.txtField9]
+            TextField('Image Mode', (self.w//2, self.h * 0.665), self.txtFieldFont, 'c'),
+            TextField('Window:', (left, self.h * 0.72), self.txtFieldFont, 'l'),
+            TextField('Full Screen:', (left, self.h * 0.78), self.txtFieldFont, 'l'),
+
+            TextField('Win Name:', (left, self.h * 0.86), self.txtFieldFont, 'l')
+        ]
 
     def createInputBoxes(self):
-        n = 16.5
-        n2 = 20
-        offset = self.h * 0.13
-        self.inputBox1 = InputBox(self.vars[0], int, (self.w*0.55, self.h//n*0 + offset, self.w*0.4, self.h//n2), self.inputBoxFontInt, self.bg_color, 0, 100)
-        self.inputBox2 = InputBox(self.vars[1], int, (self.w*0.55, self.h//n*1 + offset, self.w*0.4, self.h//n2), self.inputBoxFontInt, self.bg_color, 0, 100)
-        self.inputBox3 = InputBox(self.vars[2], int, (self.w*0.55, self.h//n*2 + offset, self.w*0.4, self.h//n2), self.inputBoxFontInt, self.bg_color, 0, 1000)
-        offset += self.h * 0.04
-        self.inputBox4 = InputBox(self.vars[3], int, (self.w*0.55, self.h//n*3 + offset, self.w*0.4, self.h//n2), self.inputBoxFontInt, self.bg_color, 0, 100)
-        self.inputBox5 = InputBox(self.vars[4], int, (self.w*0.55, self.h//n*4 + offset, self.w*0.4, self.h//n2), self.inputBoxFontInt, self.bg_color, 0, 300)
-        offset += self.h * 0.31
-        self.inputBox6 = InputBox(self.vars[6], str, (self.w*0.55, self.h//n*6 + offset, self.w*0.4, self.h//n2), self.inputBoxFontStr, self.bg_color)
+        self.inputBoxes = []
+        self.keyInputBoxes = []
 
-        self.inputBoxes = [self.inputBox1, self.inputBox2, self.inputBox3, self.inputBox4, self.inputBox5, self.inputBox6]
+        divider = 16.5
+        height = self.h // 20
+        offset = self.h * 0.1
+        self.inputBoxes.append(InputBox(self.vars[0], int, (self.w*0.55, self.h//divider*0 + offset, self.w*0.4, height), self.inputBoxFontInt, self.bg_color, 0, 100))
+        self.inputBoxes.append(InputBox(self.vars[1], int, (self.w*0.55, self.h//divider*1 + offset, self.w*0.4, height), self.inputBoxFontInt, self.bg_color, 0, 100))
+        self.inputBoxes.append(InputBox(self.vars[2], int, (self.w*0.55, self.h//divider*2 + offset, self.w*0.4, height), self.inputBoxFontInt, self.bg_color, 0, 1000))
+        offset += self.h * 0.02
+        self.inputBoxes.append(InputBox(self.vars[3], int, (self.w*0.55, self.h//divider*3 + offset, self.w*0.4, height), self.inputBoxFontInt, self.bg_color, 0, 100))
+        self.inputBoxes.append(InputBox(self.vars[4], int, (self.w*0.55, self.h//divider*4 + offset, self.w*0.4, height), self.inputBoxFontInt, self.bg_color, 0, 1000))
+        offset += self.h * 0.02
+        self.keyInputBoxes.append(KeyInputBox(self.vars[5], self.keyInputBoxUnhook, (self.w*0.55, self.h//divider*5 + offset, self.w*0.4, height), self.inputBoxFontInt, self.bg_color))
+        self.keyInputBoxes.append(KeyInputBox(self.vars[6], self.keyInputBoxUnhook, (self.w*0.55, self.h//divider*6 + offset, self.w*0.4, height), self.inputBoxFontInt, self.bg_color))
+        self.keyInputBoxes.append(KeyInputBox(self.vars[7], self.keyInputBoxUnhook, (self.w*0.55, self.h//divider*7 + offset, self.w*0.4, height), self.inputBoxFontInt, self.bg_color))
+        offset += self.h * 0.22
+        self.inputBoxes.append(InputBox(self.vars[9], str, (self.w*0.55, self.h//divider*8 + offset, self.w*0.4, height), self.inputBoxFontStr, self.bg_color))
 
     def createRadioButtons(self):
-        b1 = Button('', (self.w * 0.88, self.h * 0.66, self.w // 12.5, self.h // 16), 'Window', self.txtFieldFont, self.bg_color)
-        b2 = Button('', (self.w * 0.88, self.h * 0.73, self.w // 12.5, self.h // 16), 'Fullscreen', self.txtFieldFont, self.bg_color)
-        self.radioButton1 = RadioButtons([b1, b2], self.vars[5])
+        b1 = Button('', (self.w * 0.88, self.h * 0.684, self.w // 12.5, self.h // 16), 'Window', self.txtFieldFont, self.bg_color)
+        b2 = Button('', (self.w * 0.88, self.h * 0.75, self.w // 12.5, self.h // 16), 'Fullscreen', self.txtFieldFont, self.bg_color)
 
-        self.radioButtons = [self.radioButton1]
+        self.radioButtons = [RadioButtons([b1, b2], self.vars[8])]
 
     def createLines(self):
-        self.lines = []
-        self.lines.append(((self.w * 0.03, self.h * 0.10), (self.w * 0.97, self.h * 0.10)))
-        self.lines.append(((self.w * 0.03, self.h * 0.32), (self.w * 0.97, self.h * 0.32)))
-        self.lines.append(((self.w * 0.03, self.h * 0.59), (self.w * 0.97, self.h * 0.59)))
-        self.lines.append(((self.w * 0.03, self.h * 0.81), (self.w * 0.97, self.h * 0.81)))
+        self.lines = [
+            ((self.w * 0.03, self.h * 0.085), (self.w * 0.97, self.h * 0.085)),
+            ((self.w * 0.03, self.h * 0.285), (self.w * 0.97, self.h * 0.285)),
+            ((self.w * 0.03, self.h * 0.425), (self.w * 0.97, self.h * 0.425)),
+            ((self.w * 0.03, self.h * 0.625), (self.w * 0.97, self.h * 0.625)),
+            ((self.w * 0.03, self.h * 0.82), (self.w * 0.97, self.h * 0.82)),
+        ]
 
     def createButtons(self):
-        self.button1 = Button('Calibrate Pixel Size', (self.w*0.05, self.h*0.472, self.w*0.9, self.h*0.09), self.callibratePixelSize, self.inputBoxFontStr, self.bg_color)
-        self.button2 = Button('GameBox Manager', (self.w*0.05, self.h*0.902, self.w*0.44, self.h*0.08), self.openOffsetManager, self.inputBoxFontStr, self.bg_color)
-        self.button3 = Button('Image Manager', (self.w * 0.51, self.h * 0.902, self.w * 0.44, self.h * 0.08), self.openImageManager, self.inputBoxFontStr, self.bg_color)
-        self.buttons = [self.button1, self.button2, self.button3]
+        self.button1 = Button('GameBox Manager', (self.w*0.05, self.h*0.902, self.w*0.44, self.h*0.08), self.openOffsetManager, self.inputBoxFontStr, self.bg_color)
+        self.button2 = Button('Image Manager', (self.w*0.51, self.h*0.902, self.w*0.44, self.h*0.08), self.openImageManager, self.inputBoxFontStr, self.bg_color)
+        self.buttons = [self.button1, self.button2]
 
     @property
     def valid(self):
@@ -102,11 +110,8 @@ class SettingsMenu(Window):
             return False
         return True
 
-    def callibratePixelSize(self):
-        self.dumpVars()
-        minimizeAndExecute(CalibratePixelSize, [], self)
-        self.loadVars()
-        self.createInputBoxes()
+    def keyInputBoxUnhook(self):
+        self.focus = None
 
     def openOffsetManager(self):
         self.dumpVars()
@@ -133,6 +138,9 @@ class SettingsMenu(Window):
         for box in self.inputBoxes:
             box.inputBoxDraw(self.win, box==self.focus)
 
+        for keyBox in self.keyInputBoxes:
+            keyBox.keyInputBoxDraw(self.win, keyBox==self.focus)
+
         for radioButton in self.radioButtons:
             radioButton.draw(self.win)
 
@@ -152,27 +160,42 @@ class SettingsMenu(Window):
                         self.dumpVars()
                         self.running[0] = False
                         return
+
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     self.focus = None
                     x, y = pygame.mouse.get_pos()
+
                     for box in self.inputBoxes:
                         if pygame.Rect(*box.rect).collidepoint(x, y):
                             self.focus = box
+
+                    for keyBox in self.keyInputBoxes:
+                        if pygame.Rect(*keyBox.rect).collidepoint(x, y):
+                            keyBox.onClick()
+                            self.focus = keyBox
+
                     for radio in self.radioButtons:
                         for button in radio.buttons:
                             if pygame.Rect(*button.rect).collidepoint(x, y):
                                 radio.onClick(button)
+
                     for button in self.buttons:
                         if pygame.Rect(*button.rect).collidepoint(x, y):
                             button.func()
+
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
                         self.focus = None
+
                     elif self.focus:
-                        if event.key == pygame.K_BACKSPACE:
-                            self.focus.backspace()
-                        else:
-                            self.focus.addChar(event.unicode)
+                        if isinstance(self.focus, InputBox):
+                            if event.key == pygame.K_BACKSPACE:
+                                self.focus.backspace()
+                            else:
+                                self.focus.addChar(event.unicode)
 
             self.draw()
             self.clock.tick(24)
+
+if __name__ == '__main__':
+    SettingsMenu()

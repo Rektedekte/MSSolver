@@ -34,7 +34,7 @@ def getHandle():
     return hwnd
 
 
-def GameBoxRect(hwnd=None):
+def gameBoxRect(hwnd=None):
     if hwnd is None:
         hwnd = getHandle()
 
@@ -50,11 +50,11 @@ def GameBoxRect(hwnd=None):
     return rect[0] + offset["left"], rect[2] - offset["right"], rect[1] + offset["top"], rect[3] - offset["bottom"]
 
 
-def GameBoxImg(hwnd=None, o=True):
+def gameBoxImg(hwnd=None, o=True):
     if hwnd is None:
         hwnd = getHandle()
 
-    img = GameBox(hwnd, o)
+    img = gameBox(hwnd, o)
 
     if type(img) == bool:
         return False
@@ -65,7 +65,7 @@ def GameBoxImg(hwnd=None, o=True):
     return pyimg
 
 
-def GameBox(hwnd=None, o=True):
+def gameBox(hwnd=None, o=True):
     if hwnd is None:
         hwnd = getHandle()
 

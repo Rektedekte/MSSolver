@@ -4,4 +4,4 @@ keyboard
 pygame
 pywin32
 win32gui
-cx_freeze
+pynput

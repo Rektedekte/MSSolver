@@ -1,4 +1,5 @@
 import pygame
+from pynput import mouse, keyboard
 
 
 def drawtxt(txt, font, color, cord, anchor, win):
@@ -31,6 +32,51 @@ class Button:
         if self.txt:
             drawtxt(self.txt, self.font, [0] * 3, (self.rect[0] + self.rect[2] // 2, self.rect[1] + self.rect[3] // 2), 'c', win)
 
+class KeyInputBox(Button):
+    def __init__(self, var, unhook, rect, font, color):
+        Button.__init__(self, '', rect, None, font, color)
+        self.var = var
+        self.unhook = unhook
+        self.keyboard_listener = None
+        self.mouse_listener = None
+
+    def remove_hooks(self):
+        self.keyboard_listener.stop()
+        self.mouse_listener.stop()
+        self.mouse_listener = None
+        self.keyboard_listener = None
+        self.unhook()
+
+    def keyboard_callback(self, key):
+        self.remove_hooks()
+
+        t = type(key).__name__
+
+        self.var[0]["device"] = "keyboard"
+        self.var[0]["type"] = t
+        if t == "Key":
+            self.var[0]["key"] = key.name
+        else:
+            self.var[0]["key"] = key.char
+
+    def mouse_callback(self, _, __, button, down):
+        if down:
+            self.remove_hooks()
+
+            self.var[0]["device"] = "mouse"
+            self.var[0]["type"] = type(button).__name__
+            self.var[0]["key"] = button.name
+
+    def onClick(self):
+        self.keyboard_listener = keyboard.Listener(on_press=self.keyboard_callback)
+        self.mouse_listener = mouse.Listener(on_click=self.mouse_callback)
+        self.keyboard_listener.start()
+        self.mouse_listener.start()
+
+    def keyInputBoxDraw(self, win, focus):
+        pygame.draw.rect(win, self.color, self.rect)
+        pygame.draw.rect(win, [200, 0, 0] if focus else [0] * 3, self.rect, 2)
+        drawtxt('"{}"'.format(self.var[0]["key"]), self.font, [0] * 3, (self.rect[0] + self.rect[2] // 2, self.rect[1] + self.rect[3] // 2), 'c', win)
 
 class InputBox(Button):
     def __init__(self, var, t, rect, font, color, low=None, high=None):
@@ -90,7 +136,6 @@ class InputBox(Button):
         pygame.draw.rect(win, self.color, self.rect)
         pygame.draw.rect(win, [200, 0, 0] if focus else [0]*3, self.rect, 2)
         drawtxt('"{}"'.format(self.txt) if self.t == str else self.txt, self.font, [0] * 3, (self.rect[0] + self.rect[2] // 2, self.rect[1] + self.rect[3] // 2), 'c', win)
-
 
 class TextField:
     def __init__(self, txt, cord, font, anchor):

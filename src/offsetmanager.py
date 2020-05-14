@@ -1,6 +1,6 @@
 from tools.uielements import drawtxt
 from tools.window import Window
-from tools.grab import GameBoxImg
+from tools.grab import gameBoxImg
 from tools import getVars
 import pygame
 
@@ -18,7 +18,7 @@ class OffsetManager(Window):
         self.mode = vars["mode"]
         self.windowName = vars["window_name"]
 
-        self.img = GameBoxImg(o=False)
+        self.img = gameBoxImg(o=False)
 
         if not self.img:
             self.running[0] = False

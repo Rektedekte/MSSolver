@@ -4,10 +4,9 @@ from errorscreen import ErrorScreen
 from typescreen import TypeScreen
 from time import sleep
 import numpy
-import mouse
-import keyboard
 import random
 import sys
+from pynput import mouse, keyboard
 
 
 class AI:
@@ -23,18 +22,21 @@ class AI:
             'm': ['mine', 'activated_mine']
         }
 
-        self.box = grab.GameBoxRect()
+        self.box = grab.gameBoxRect()
         if not self.box:
             self.running[0] = False
             sys.exit()
 
+        self.mouse_controller = mouse.Controller()
+        self.keyboard_controller = keyboard.Controller()
         self.loadVars()
         self.loadTypes()
 
-        self.grid = [['tile' for j in range(self.w)] for i in range(self.h)]
-
-        self.updateGrid()
         self.checkForDescreps()
+
+        self.grid = [['tile' for j in range(self.w)] for i in range(self.h)]
+        self.typeDetectionApprox = 0.01
+        self.updateGrid()
 
         self.outerBorderTiles = []
         self.innerBorderTiles = []
@@ -44,6 +46,32 @@ class AI:
         self.endGame = False
 
         self.run()
+
+    def parseInputProfile(self, obj):
+        if obj["device"] == "mouse":
+            return lambda: (
+                self.mouse_controller.press(mouse.__dict__[obj["type"]].__dict__[obj["key"]]),
+                sleep(self.delay),
+                self.mouse_controller.release(mouse.__dict__[obj["type"]].__dict__[obj["key"]])
+            )
+
+        if obj["type"] == "Key":
+            return lambda: (
+                self.mouse_controller.press(mouse.Button.left),
+                self.mouse_controller.release(mouse.Button.left),
+                self.keyboard_controller.press(keyboard.Key.__dict__[obj["key"]]),
+                sleep(self.delay),
+                self.keyboard_controller.release(keyboard.Key.__dict__[obj["key"]])
+            )
+        
+        return lambda: (
+            self.mouse_controller.press(mouse.Button.left),
+            self.mouse_controller.release(mouse.Button.left),
+            self.keyboard_controller.press(keyboard.KeyCode(char=obj["key"])),
+            sleep(self.delay),
+            self.keyboard_controller.release(keyboard.KeyCode(char=obj["key"]))
+        )
+
 
     def loadTypes(self):
         self.types = loadTypes()
@@ -61,6 +89,9 @@ class AI:
         self.mineLen = params["bombs"]
         self.pw = (self.box[1] - self.box[0]) // self.w
         self.delay = 1 / params["fps"] * 1.04
+        self.reveal_field = self.parseInputProfile(params["reveal_field"])
+        self.place_flag = self.parseInputProfile(params["place_flag"])
+        self.reveal_neigh = self.parseInputProfile(params["reveal_neigh"])
         self.winMode = params["mode"]
         self.winTitle = params["window_name"]
 
@@ -160,7 +191,7 @@ class AI:
             sys.exit()
 
     def updateGrid(self):
-        self.arr = grab.GameBox()
+        self.arr = grab.gameBox()
         if type(self.arr) == bool:
             self.running[0] = False
             sys.exit()
@@ -183,8 +214,13 @@ class AI:
 
     def readType(self, y, x):
         avg = numpy.average(self.arr[y*self.pw:(y+1)*self.pw, x*self.pw:(x+1)*self.pw])
+        match = None
 
-        if avg not in self.typesValues:
+        for typeValue in self.typesValues:
+            if abs(avg - typeValue) < self.typeDetectionApprox:
+                match = typeValue
+
+        if match is None:
             temp = self.types
 
             openprocess.openProcess(TypeScreen, (self.arr[y * self.pw:(y + 1) * self.pw, x * self.pw:(x + 1) * self.pw],))
@@ -194,7 +230,11 @@ class AI:
                 self.running[0] = False
                 sys.exit()
 
-        ty = self.typesKeys[self.typesValues.index(avg)]
+            for typeValue in self.typesValues:
+                if abs(avg - typeValue) < self.typeDetectionApprox:
+                    match = typeValue
+
+        ty = self.typesKeys[self.typesValues.index(match)]
 
         if ty in ["mine", "activated_mine", "incorrect_flag"]:
             self.running[0] = False
@@ -202,28 +242,20 @@ class AI:
         return ty
 
     def doMove(self, y, x, c):
-        mouse.move(self.box[0] + (x + 0.5) * self.pw, self.box[2] + (y + 0.5) * self.pw)
+        self.mouse_controller.position = self.box[0] + (x + 0.5) * self.pw, self.box[2] + (y + 0.5) * self.pw
 
-        if c in ['r', 'l']:
-            if c == 'l':
-                mouse.press('left')
-                sleep(self.delay)
-                mouse.release('left')
-            if c == 'r':
-                mouse.press('right')
-                sleep(self.delay)
-                mouse.release('right')
-        else:
-            mouse.click('left')
-            keyboard.press('space')
-            sleep(self.delay)
-            keyboard.release('space')
+        if c == 'reveal_field':
+            self.reveal_field()
+        elif c == 'place_flag':
+            self.place_flag()
+        elif c == "reveal_neigh":
+            self.reveal_neigh()
 
     def randomMove(self):
         x, y = random.randint(0, self.w-1), random.randint(0, self.h-1)
         while self.grid[y][x] != 'tile':
             x, y = random.randint(0, self.w - 1), random.randint(0, self.h - 1)
-        return y, x, 'l'
+        return y, x, 'reveal_field'
 
     def randomBorderMove(self):
         i = random.randint(0, len(self.outerBorderTiles) - 1)
@@ -231,14 +263,14 @@ class AI:
         while self.grid[y][x] != 'tile':
             i = random.randint(0, len(self.outerBorderTiles) - 1)
             y, x = self.outerBorderTiles[i]
-        return y, x, 'l'
+        return y, x, 'reveal_field'
 
     def centerMove(self):
-        return self.h//2, self.w//2, 'l'
+        return self.h//2, self.w//2, 'reveal_field'
 
     def getCompatibleConfigs(self, bordertiles, arr, k=0):
         for i, j in self.innerBorderTiles:
-            numFlags = len(self.sorroundingFind(i, j, 'f'))
+            numFlags = self.sorroundingFindLen(i, j, 'f')
 
             if numFlags > int(self.grid[i][j]):
                 return
@@ -367,11 +399,11 @@ class AI:
         for i in range(len(chanceArr)):
 
             if chanceArr[i] == 0.0:
-                self.doMove(self.outerBorderTiles[i][0], self.outerBorderTiles[i][1], 'l')
+                self.doMove(self.outerBorderTiles[i][0], self.outerBorderTiles[i][1], 'reveal_field')
                 s = True
 
             elif chanceArr[i] == 1.0:
-                self.doMove(self.outerBorderTiles[i][0], self.outerBorderTiles[i][1], 'r')
+                self.doMove(self.outerBorderTiles[i][0], self.outerBorderTiles[i][1], 'place_flag')
                 s = True
 
         if s:
@@ -379,7 +411,7 @@ class AI:
 
         i = chanceArr.index(min(chanceArr))
         y, x = self.outerBorderTiles[i]
-        self.doMove(y, x, 'l')
+        self.doMove(y, x, 'reveal_field')
 
     def simpleMoves(self):
         for i, j in self.innerBorderTiles:
@@ -390,7 +422,7 @@ class AI:
 
             if pointNum == len(sorroundingTiles) + sorroundingFlagsLen:
                 for y, x in sorroundingTiles:
-                    yield y, x, 'r'
+                    yield y, x, 'place_flag'
 
         for i, j in self.innerBorderTiles:
 
@@ -398,7 +430,7 @@ class AI:
             sorroundingFlagsLen = self.sorroundingFindLen(i, j, 'f')
 
             if pointNum == sorroundingFlagsLen:
-                yield i, j, 's'
+                yield i, j, 'reveal_neigh'
 
         for i, j in self.innerBorderTiles:
 
@@ -418,7 +450,7 @@ class AI:
 
                 if targetNum - targetSorroundingFlagsLen - (len(targetSorroundingTiles) - len(sharedSorroundingTiles)) == sourceNum - len(sourceSorroundingFlags):
                     for k, l in sourceExclusiveSorroundingTiles:
-                        yield k, l, 'l'
+                        yield k, l, 'reveal_field'
 
         for i, j in self.innerBorderTiles:
 
@@ -438,7 +470,7 @@ class AI:
                 if sourceNum - sourceSorroundingFlagsLen > targetNum - targetSorroundingFlagsLen:
                     if (sourceNum - sourceSorroundingFlagsLen) - (targetNum - targetSorroundingFlagsLen) == len(sourceSorroundingTiles) - len(sharedSorroundingTiles):
                         for k, l in sourceExclusiveSorroundingTiles:
-                            yield k, l, 'r'
+                            yield k, l, 'place_flag'
 
     def wait(self):
         while True:
