@@ -1,6 +1,4 @@
 numpy
-mouse
-keyboard
 pygame
 pywin32
 win32gui

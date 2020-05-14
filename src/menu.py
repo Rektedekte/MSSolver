@@ -2,7 +2,7 @@ from tools.openprocess import openProcess
 from tools.uielements import Button
 from tools.window import Window
 from settings import SettingsMenu
-from ai import AI
+from solver import Solver
 import pygame
 import sys
 
@@ -25,7 +25,7 @@ class MainScreen(Window):
         self.run()
 
     def solve(self):
-        openProcess(AI, [], source=self, bg=self.backgroundTick)
+        openProcess(Solver, [], source=self, bg=self.backgroundTick)
 
     def openSettings(self):
         openProcess(SettingsMenu, [], source=self, bg=self.backgroundTick)

@@ -9,7 +9,7 @@ import sys
 from pynput import mouse, keyboard
 
 
-class AI:
+class Solver:
     def __init__(self, running=None):
         if running is None:
             running = [True]
@@ -49,28 +49,27 @@ class AI:
 
     def parseInputProfile(self, obj):
         if obj["device"] == "mouse":
+            key = mouse.__dict__[obj["type"]].__dict__[obj["key"]]
+
             return lambda: (
-                self.mouse_controller.press(mouse.__dict__[obj["type"]].__dict__[obj["key"]]),
+                self.mouse_controller.press(key),
                 sleep(self.delay),
-                self.mouse_controller.release(mouse.__dict__[obj["type"]].__dict__[obj["key"]])
+                self.mouse_controller.release(key)
             )
 
-        if obj["type"] == "Key":
+        else:
+            if obj["type"] == "Key":
+                key = keyboard.Key.__dict__[obj["key"]]
+            else:
+                key = keyboard.KeyCode(char=obj["key"])
+
             return lambda: (
                 self.mouse_controller.press(mouse.Button.left),
                 self.mouse_controller.release(mouse.Button.left),
-                self.keyboard_controller.press(keyboard.Key.__dict__[obj["key"]]),
+                self.keyboard_controller.press(key),
                 sleep(self.delay),
-                self.keyboard_controller.release(keyboard.Key.__dict__[obj["key"]])
+                self.keyboard_controller.release(key)
             )
-        
-        return lambda: (
-            self.mouse_controller.press(mouse.Button.left),
-            self.mouse_controller.release(mouse.Button.left),
-            self.keyboard_controller.press(keyboard.KeyCode(char=obj["key"])),
-            sleep(self.delay),
-            self.keyboard_controller.release(keyboard.KeyCode(char=obj["key"]))
-        )
 
 
     def loadTypes(self):
@@ -219,6 +218,7 @@ class AI:
         for typeValue in self.typesValues:
             if abs(avg - typeValue) < self.typeDetectionApprox:
                 match = typeValue
+                break
 
         if match is None:
             temp = self.types
@@ -233,6 +233,7 @@ class AI:
             for typeValue in self.typesValues:
                 if abs(avg - typeValue) < self.typeDetectionApprox:
                     match = typeValue
+                    break
 
         ty = self.typesKeys[self.typesValues.index(match)]
 
@@ -503,3 +504,6 @@ class AI:
                 self.probabilityMove()
 
         self.running[0] = False
+
+if __name__ == '__main__':
+    Solver()
