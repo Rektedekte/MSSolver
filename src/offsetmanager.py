@@ -126,7 +126,7 @@ class OffsetManager(Window):
                 self.adjustSideToPos(*pygame.mouse.get_pos())
 
             self.draw()
-            self.clock.tick(24)
+            self.clock.tick(60)
 
 
 class Box:
@@ -184,6 +184,3 @@ class Box:
     def isValid(self):
         return self.right >= self.left and self.bottom >= self.top
 
-
-if __name__ == '__main__':
-    OffsetManager()
