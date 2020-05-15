@@ -4,7 +4,8 @@ from tools.grab import gameBoxImg
 from tools import getVars
 import pygame
 
-pw = 3
+
+pw = 1
 
 
 class OffsetManager(Window):
@@ -18,25 +19,27 @@ class OffsetManager(Window):
         self.mode = vars["mode"]
         self.windowName = vars["window_name"]
 
-        self.img = gameBoxImg(o=False)
+        self.focusImg = gameBoxImg(o=False)
 
-        if not self.img:
+        if not self.focusImg:
             self.running[0] = False
             return
 
-        super().__init__(*self.img.get_size(), 'GameBox Manager')
+        self.nonFocusImg = self.focusImg.copy()
+        self.nonFocusImg.set_alpha(200)
 
-        self.move(0, 0)
+        super().__init__(*self.focusImg.get_size(), 'GameBox Manager', pygameFlags=None if self.mode=="Window" else pygame.FULLSCREEN)
+
         if self.mode == 'Window':
             self.restore()
         self.displayWidth, self.displayHeight = self.win.get_size()
 
-        self.font = pygame.font.Font('fonts/OpenSans-ExtraBold.ttf', 30)
+        self.font = pygame.font.Font('fonts/OpenSans-Bold.ttf', 30)
 
         self.box = Box(self.displayWidth, self.displayHeight, getVars.loadOffset())
 
         self.focus = None
-        self.pw = 3
+        self.pw = pw
 
         self.run()
 
@@ -86,12 +89,18 @@ class OffsetManager(Window):
                 self.box.bottom = y
 
     def draw(self):
-        self.win.blit(self.img, (0, 0))
+        self.win.fill((255, 255, 255))
+        self.win.blit(self.nonFocusImg, (0, 0))
+
+        focusCutOut = pygame.Surface(self.box.size)
+        focusCutOut.blit(self.focusImg, (0, 0), self.box.rect)
+
+        self.win.blit(focusCutOut, (self.box.offsetL, self.box.offsetT))
 
         pygame.draw.rect(self.win, (0, 255, 0), self.box.rect, pw)
 
-        drawtxt('Width: {}'.format(self.box.width), self.font, (0, 255, 0), (self.displayWidth * 0.003, self.displayHeight * 0.02), 'l', self.win)
-        drawtxt('Height: {}'.format(self.box.height), self.font, (0, 255, 0), (self.displayWidth * 0.003, self.displayHeight * 0.05), 'l', self.win)
+        drawtxt('Width: {}'.format(self.box.width), self.font, (0, 0, 0), (self.displayWidth * 0.003, self.displayHeight * 0.02), 'l', self.win)
+        drawtxt('Height: {}'.format(self.box.height), self.font, (0, 0, 0), (self.displayWidth * 0.003, self.displayHeight * 0.05), 'l', self.win)
 
         pygame.display.update()
 
@@ -168,5 +177,13 @@ class Box:
     def height(self):
         return self.disHeight - self.offsetT - self.offsetB
 
+    @property
+    def size(self):
+        return self.width, self.height
+
     def isValid(self):
         return self.right >= self.left and self.bottom >= self.top
+
+
+if __name__ == '__main__':
+    OffsetManager()

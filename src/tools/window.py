@@ -1,16 +1,22 @@
-from win32gui import FindWindow, ShowWindow, MoveWindow, SetForegroundWindow, GetWindowText
-from win32con import SW_MINIMIZE, SW_RESTORE
+import win32com.client
+import win32con
+import win32gui
 import pygame
 import sys
 
 
 class Window:
-    def __init__(self, w, h, name=None, icon=None):
+    def __init__(self, w, h, name=None, icon=None, pygameFlags=None):
         self.w = w
         self.h = h
 
         pygame.init()
-        self.win = pygame.display.set_mode((self.w, self.h))
+
+        if pygameFlags:
+            self.win = pygame.display.set_mode((self.w, self.h), flags=pygameFlags)
+        else:
+            self.win = pygame.display.set_mode((self.w, self.h))
+
         self.clock = pygame.time.Clock()
 
         if name:
@@ -25,20 +31,22 @@ class Window:
             assert type(icon) == str
             pygame.display.set_icon(pygame.image.load(icon).convert())
 
-        self.hwnd = FindWindow(None, self.winTitle)
+        self.hwnd = win32gui.FindWindow(None, self.winTitle)
+
+    def getHandle(self):
+        self.hwnd = win32gui.FindWindow(None, self.winTitle)
 
     def minimize(self):
-        ShowWindow(self.hwnd, SW_MINIMIZE)
+        win32gui.ShowWindow(self.hwnd, win32con.SW_MINIMIZE)
 
     def restore(self):
-        ShowWindow(self.hwnd, SW_RESTORE)
-        try:
-            SetForegroundWindow(self.hwnd)
-        except:
-            pass
+        shell = win32com.client.Dispatch("WScript.Shell")
+        shell.SendKeys('%')
+        win32gui.ShowWindow(self.hwnd, win32con.SW_RESTORE)
+        win32gui.SetForegroundWindow(self.hwnd)
 
     def move(self, l, t):
-        MoveWindow(self.hwnd, l - 7, t,  l + self.win.get_width() + 14, t + self.win.get_height() + 45, True)
+        win32gui.MoveWindow(self.hwnd, l - 7, t,  l + self.win.get_width() + 14, t + self.win.get_height() + 45, True)
 
     def backgroundTick(self):
         for event in pygame.event.get():

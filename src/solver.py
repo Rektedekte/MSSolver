@@ -343,7 +343,7 @@ class Solver:
                 pos.append(chance)
 
             if len(pos) == 0:
-                lst.append(self.findLen('t') / (self.mineLen - self.findLen('f')))
+                lst.append((self.mineLen - self.findLen('f')) / self.findLen('t'))
 
             else:
                 lst.append(max(pos))

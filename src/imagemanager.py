@@ -12,6 +12,7 @@ class ImageManager(Window):
         self.running = running
 
         super().__init__(650, 700, 'Image Manager')
+        self.restore()
 
         self.txtFont = pygame.font.Font('fonts/OpenSans-Light.ttf', 30)
 
