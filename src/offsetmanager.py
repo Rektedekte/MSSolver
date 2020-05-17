@@ -5,7 +5,7 @@ from tools import getVars
 import pygame
 
 
-pw = 1
+pw = 2
 
 
 class OffsetManager(Window):
@@ -97,7 +97,7 @@ class OffsetManager(Window):
 
         self.win.blit(focusCutOut, (self.box.offsetL, self.box.offsetT))
 
-        pygame.draw.rect(self.win, (0, 255, 0), self.box.rect, pw)
+        pygame.draw.rect(self.win, (0, 255, 0), self.box.boxDrawRect, pw)
 
         drawtxt('Width: {}'.format(self.box.width), self.font, (0, 0, 0), (self.displayWidth * 0.003, self.displayHeight * 0.02), 'l', self.win)
         drawtxt('Height: {}'.format(self.box.height), self.font, (0, 0, 0), (self.displayWidth * 0.003, self.displayHeight * 0.05), 'l', self.win)
@@ -146,8 +146,12 @@ class Box:
             self.bottom = disHeight
 
     @property
+    def boxDrawRect(self):
+        return self.left - pw, self.top - pw, self.width + 2 * pw - 2, self.height + 2 * pw - 2
+
+    @property
     def rect(self):
-        return self.left - pw + 1, self.top - pw + 1, self.width + pw * 2 - 2, self.height + pw * 2 - 2
+        return self.left, self.top, self.width, self.height
 
     @property
     def offset(self):
@@ -184,3 +188,6 @@ class Box:
     def isValid(self):
         return self.right >= self.left and self.bottom >= self.top
 
+
+if __name__ == '__main__':
+    OffsetManager()

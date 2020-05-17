@@ -196,6 +196,3 @@ class SettingsMenu(Window):
 
             self.draw()
             self.clock.tick(24)
-
-if __name__ == '__main__':
-    SettingsMenu()
