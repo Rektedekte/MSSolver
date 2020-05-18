@@ -374,7 +374,7 @@ class Solver:
             self.outerBorderTiles = [b for a in segOuterBorder for b in a]
 
         for segment in segOuterBorder:
-            if len(segment) < self.BF_LIMIT:
+            if len(segment) < self.BF_LIMIT or True:
                 self.compBorderConfigs = []
                 self.getCompatibleConfigs(segment, [])
 
@@ -504,6 +504,3 @@ class Solver:
                 self.probabilityMove()
 
         self.running[0] = False
-
-if __name__ == '__main__':
-    Solver()

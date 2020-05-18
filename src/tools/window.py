@@ -17,6 +17,8 @@ class Window:
         else:
             self.win = pygame.display.set_mode((self.w, self.h))
 
+        self.w, self.h = self.win.get_size()
+
         self.clock = pygame.time.Clock()
 
         if name:

@@ -27,10 +27,12 @@ class Button:
         self.color = color
 
     def draw(self, win, focus=False):
-        pygame.draw.rect(win, self.color, self.rect)
+        if self.color:
+            pygame.draw.rect(win, self.color, self.rect)
         pygame.draw.rect(win, [0]*3 if not focus else (255, 0, 0), self.rect, 2)
         if self.txt:
             drawtxt(self.txt, self.font, [0] * 3, (self.rect[0] + self.rect[2] // 2, self.rect[1] + self.rect[3] // 2), 'c', win)
+
 
 class KeyInputBox(Button):
     def __init__(self, var, unhook, rect, font, color):
@@ -77,6 +79,7 @@ class KeyInputBox(Button):
         pygame.draw.rect(win, self.color, self.rect)
         pygame.draw.rect(win, [200, 0, 0] if focus else [0] * 3, self.rect, 2)
         drawtxt('"{}"'.format(self.var[0]["key"]), self.font, [0] * 3, (self.rect[0] + self.rect[2] // 2, self.rect[1] + self.rect[3] // 2), 'c', win)
+
 
 class InputBox(Button):
     def __init__(self, var, t, rect, font, color, low=None, high=None):
@@ -133,9 +136,11 @@ class InputBox(Button):
             self.apply()
 
     def inputBoxDraw(self, win, focus):
-        pygame.draw.rect(win, self.color, self.rect)
+        if self.color:
+            pygame.draw.rect(win, self.color, self.rect)
         pygame.draw.rect(win, [200, 0, 0] if focus else [0]*3, self.rect, 2)
         drawtxt('"{}"'.format(self.txt) if self.t == str else self.txt, self.font, [0] * 3, (self.rect[0] + self.rect[2] // 2, self.rect[1] + self.rect[3] // 2), 'c', win)
+
 
 class TextField:
     def __init__(self, txt, cord, font, anchor):
