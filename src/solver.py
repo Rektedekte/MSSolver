@@ -374,7 +374,7 @@ class Solver:
             self.outerBorderTiles = [b for a in segOuterBorder for b in a]
 
         for segment in segOuterBorder:
-            if len(segment) < self.BF_LIMIT or True:
+            if len(segment) < self.BF_LIMIT:
                 self.compBorderConfigs = []
                 self.getCompatibleConfigs(segment, [])
 
