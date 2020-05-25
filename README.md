@@ -40,3 +40,8 @@ In order to use the solver, you will need to set it up. Here are all the setting
 All of the options need to be adjusted to your game. If you don't know that to place in BF_LIMIT, leave it be. Raising the value can mean more accurate solving, but will slow the game down significantly (exponentially). The FPS option doesn't need to be changed, but if you are running a minesweeper version with a higher than 24 fps, it can speed the program up a lot.
 
 If something goes wrong, you can always use the reset_settings.py script to reset them to default (this uses the local default settings)
+
+### Known issues:
+* The solver does not support animated versions of minesweeper. This includes the new official Microsoft minesweeper.
+* The settings menu sometimes freezes after typing in a parameter. Solved by closing and opening the window.
+* There is significant overhead on slower computers when opening a new window, caused by the use of multiprocess.
