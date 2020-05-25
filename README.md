@@ -14,3 +14,10 @@ This is a Minesweeper solver built in python. The ui is made with pygame, and mu
 * pywin32
 * win32gui
 * pynput
+
+## How to use:
+* Create python 3.5 or 3.6 environment
+* Activate the environment
+* Cd into the MSSolver folder and "pip -r install requirements.txt"
+* Cd into src folder
+* "python run.py"
