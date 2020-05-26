@@ -41,6 +41,13 @@ All of the options need to be adjusted to your game. If you don't know what to p
 
 If something goes wrong, you can always use the reset_settings.py script to reset them to default (this uses the local default settings)
 
+When using the solver on a new minesweeper game, you will continually be asked what a specific cell represents. Closing the window without choosing any option will stop the solver. This is in case something went wrong. 
+* 0 through 8: represents numbers, with 0 being a cell with no mines arround it
+* Tile: A closed cell that hasn't been revealed
+* Flag: A flag
+* MineA: An triggered mine
+* WrongF: A wrongly placed flag (after triggering a mine)
+
 ### Known issues:
 * The solver does not support animated versions of minesweeper. This includes the new official Microsoft minesweeper.
 * The settings menu sometimes freezes after typing in a parameter. Solved by closing and opening the window.
